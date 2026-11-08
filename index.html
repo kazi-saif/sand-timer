@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#20211f">
+  <meta name="description" content="SAND — Let distractions settle. Let focus flow.">
+  <title>SAND — A little time, one thing at a time</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/app.js" type="module"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <a class="brand" href="./" aria-label="SAND home">SAND<span>LET FOCUS FLOW</span></a>
+      <button class="settings-button" id="open-settings" aria-haspopup="dialog"><span aria-hidden="true">☷</span> Settings</button>
+    </header>
+    <main>
+      <nav class="modes" aria-label="Timer mode">
+        <button data-mode="focus" aria-pressed="true">Focus</button>
+        <button data-mode="short" aria-pressed="false">Short break</button>
+        <button data-mode="long" aria-pressed="false">Long break</button>
+      </nav>
+      <div class="hourglass-stage">
+        <svg class="hourglass" viewBox="0 0 200 300" role="img" aria-labelledby="glass-title glass-description">
+          <title id="glass-title">The SAND hourglass</title>
+          <desc id="glass-description">A custom glass hourglass, filled with warm sand. The timer is ready to begin.</desc>
+          <defs>
+            <linearGradient id="glass"><stop stop-color="currentColor" stop-opacity=".18"/><stop offset=".3" stop-color="currentColor" stop-opacity=".02"/><stop offset=".7" stop-color="currentColor" stop-opacity=".03"/><stop offset="1" stop-color="currentColor" stop-opacity=".22"/></linearGradient>
+            <clipPath id="chambers"><path d="M40 29H160C160 89 142 108 107 143Q100 150 107 157C142 192 160 211 160 271H40C40 211 58 192 93 157Q100 150 93 143C58 108 40 89 40 29Z"/></clipPath>
+          </defs>
+          <ellipse class="ground-shadow" cx="100" cy="289" rx="75" ry="5"/>
+          <path class="glass" d="M40 29H160C160 89 142 108 107 143Q100 150 107 157C142 192 160 211 160 271H40C40 211 58 192 93 157Q100 150 93 143C58 108 40 89 40 29Z"/>
+          <g clip-path="url(#chambers)" class="sand"><path d="M30 66Q100 74 170 66L104 148H96Z"/><path d="M40 271Q100 253 160 271Z"/></g>
+          <path class="reflection" d="M47 36C47 79 60 102 84 128M150 185C157 210 157 237 152 259"/>
+          <path class="frame" d="M31 22H169M31 278H169"/>
+        </svg>
+      </div>
+      <section class="timer" aria-label="Session timer">
+        <p class="eyebrow" id="mode-label">A moment for focus</p>
+        <h1 id="time" aria-label="25 minutes">25:00</h1>
+        <p class="caption">A little time. One thing at a time.</p>
+        <div class="actions"><button class="primary" id="start" aria-describedby="build-status" disabled>Start focus <span aria-hidden="true">↗</span></button><button id="reset" disabled>Reset</button></div>
+        <p class="build-status" id="build-status">Design preview · Timer coming in the next step</p>
+      </section>
+    </main>
+    <footer><div class="session-progress"><span class="session-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Session 1 of 4</div><p>Today <span class="separator">/</span> <strong>0</strong> focus sessions <span class="separator">/</span> <strong>0</strong> min</p></footer>
+  </div>
+  <dialog id="settings" aria-labelledby="settings-title">
+    <div class="dialog-heading"><div><p class="eyebrow">Make it yours</p><h2 id="settings-title">Settings</h2></div><button id="close-settings" aria-label="Close settings">✕</button></div>
+    <fieldset><legend>Appearance</legend><p class="setting-description">Find your quiet corner.</p><div class="theme-options"><button data-theme="dark" aria-pressed="true"><span class="swatch swatch-dark"></span>Dark</button><button data-theme="warm" aria-pressed="false"><span class="swatch swatch-warm"></span>Warm light</button><button data-theme="ambient" aria-pressed="false"><span class="swatch swatch-ambient"></span>Premium ambient</button></div></fieldset>
+    <p class="saved-note" id="save-status" role="status">Your theme is saved on this browser.</p>
+  </dialog>
+</body>
+</html>
