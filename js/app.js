@@ -51,6 +51,50 @@ const status = document.querySelector('#timer-status');
 const switchDialog = document.querySelector('#switch-mode');
 const completionDialog = document.querySelector('#completion');
 const timeDisplay = document.querySelector('#time');
+const soundToggle = document.querySelector('#completion-sound');
+let audioContext;
+
+try {
+  soundToggle.checked = localStorage.getItem('sand.completionSound') !== 'off';
+} catch {
+  // Keep the default when storage is unavailable.
+}
+
+function enableAudio() {
+  if (!soundToggle.checked || !window.AudioContext) return;
+  try {
+    audioContext ??= new AudioContext();
+    if (audioContext.state !== 'running') audioContext.resume().catch(() => {});
+  } catch {
+    // The completion dialog still works if audio is unavailable.
+  }
+}
+
+soundToggle.addEventListener('change', () => {
+  try {
+    localStorage.setItem('sand.completionSound', soundToggle.checked ? 'on' : 'off');
+  } catch {
+    // The checkbox still applies for this visit.
+  }
+  enableAudio();
+});
+
+function playCompletionChime() {
+  if (!soundToggle.checked || audioContext?.state !== 'running') return;
+  const start = audioContext.currentTime;
+  [523.25, 659.25, 783.99].forEach((frequency, index) => {
+    const onset = start + index * 0.13;
+    const note = audioContext.createOscillator();
+    const volume = audioContext.createGain();
+    note.frequency.value = frequency;
+    volume.gain.setValueAtTime(0, onset);
+    volume.gain.linearRampToValueAtTime(0.09, onset + 0.025);
+    volume.gain.exponentialRampToValueAtTime(0.001, onset + 0.45);
+    note.connect(volume).connect(audioContext.destination);
+    note.start(onset);
+    note.stop(onset + 0.46);
+  });
+}
 
 function render() {
   const snapshot = timer.tick();
@@ -72,6 +116,7 @@ function render() {
     if (state === 'complete') {
       document.querySelector('#completion-copy').textContent = `${modes[selectedMode].name} session finished. Choose your next moment when you are ready.`;
       if (!completionDialog.open) completionDialog.showModal();
+      playCompletionChime();
     }
     lastState = state;
   }
@@ -87,6 +132,7 @@ function changeMode(mode) {
 }
 
 startButton.addEventListener('click', () => {
+  enableAudio();
   timer.tick();
   if (timer.state === 'running') timer.pause();
   else {
