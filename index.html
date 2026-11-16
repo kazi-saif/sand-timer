@@ -58,6 +58,20 @@
       <legend>Sound</legend>
       <label class="sound-option"><input id="completion-sound" type="checkbox" checked> Play a chime when a session ends</label>
     </fieldset>
+    <form id="durations">
+      <fieldset>
+        <legend>Session durations</legend>
+        <p class="setting-description">Minutes · Applies to your next session</p>
+        <div class="duration-fields">
+          <label>Focus<input name="focus" type="number" min="1" max="180" step="1" required value="25"></label>
+          <label>Short break<input name="short" type="number" min="1" max="180" step="1" required value="5"></label>
+          <label>Long break<input name="long" type="number" min="1" max="180" step="1" required value="15"></label>
+        </div>
+        <button class="primary" type="submit">Save durations</button>
+        <p id="duration-status" class="setting-description" role="status"></p>
+      </fieldset>
+    </form>
+    <p class="setting-description desktop-note">Windows app · Closing the window keeps SAND in the tray. Right-click the tray icon to open or quit.</p>
   </dialog>
   <dialog id="switch-mode" aria-labelledby="switch-title" aria-describedby="switch-copy">
     <h2 id="switch-title">Change your moment?</h2>

@@ -1,5 +1,6 @@
 import { Timer, formatTime } from './timer.js';
 import { renderSand } from './hourglass.js';
+import { scheduleDesktopAlarm, listenForDesktopCompletion } from './desktop.js';
 
 const root = document.documentElement;
 const settings = document.querySelector('#settings');
@@ -41,10 +42,42 @@ const modes = {
   short: { label: 'A little room to breathe', minutes: 5, name: 'Short break' },
   long: { label: 'Step away. Come back refreshed.', minutes: 15, name: 'Long break' },
 };
+try {
+  const savedDurations = JSON.parse(localStorage.getItem('sand.durations'));
+  for (const key of Object.keys(modes)) {
+    const minutes = savedDurations?.[key];
+    if (Number.isInteger(minutes) && minutes >= 1 && minutes <= 180) modes[key].minutes = minutes;
+  }
+} catch { /* Use default durations when stored data is unavailable. */ }
 let selectedMode = 'focus';
 let pendingMode = null;
 let lastState = 'idle';
 const timer = new Timer(modes.focus.minutes * 60_000);
+try {
+  const saved = JSON.parse(localStorage.getItem('sand.session'));
+  if (saved && Object.hasOwn(modes, saved.mode) && timer.restore(saved.timer)) selectedMode = saved.mode;
+} catch { /* Begin a fresh session if saved data cannot be read. */ }
+let savedSessionKey = '';
+document.querySelectorAll('[data-mode]').forEach(button => {
+  button.setAttribute('aria-pressed', String(button.dataset.mode === selectedMode));
+});
+const durationForm = document.querySelector('#durations');
+for (const key of Object.keys(modes)) durationForm.elements[key].value = modes[key].minutes;
+durationForm.addEventListener('submit', event => {
+  event.preventDefault();
+  if (!durationForm.reportValidity()) return;
+  const durations = {};
+  for (const key of Object.keys(modes)) {
+    durations[key] = Number(durationForm.elements[key].value);
+    modes[key].minutes = durations[key];
+  }
+  let message = 'Durations saved. Changes apply to your next session.';
+  try { localStorage.setItem('sand.durations', JSON.stringify(durations)); }
+  catch { message = 'Durations updated for this visit. Storage is unavailable.'; }
+  if (timer.state === 'idle') timer.reset(modes[selectedMode].minutes * 60_000);
+  document.querySelector('#duration-status').textContent = message;
+  render();
+});
 const startButton = document.querySelector('#start');
 const resetButton = document.querySelector('#reset');
 const status = document.querySelector('#timer-status');
@@ -100,6 +133,15 @@ function render() {
   const snapshot = timer.tick();
   renderSand(document.querySelector('.hourglass'), snapshot);
   const { state, remainingMs } = snapshot;
+  const sessionKey = JSON.stringify([selectedMode, state, snapshot.endTime, snapshot.durationMs]);
+  if (sessionKey !== savedSessionKey) {
+    savedSessionKey = sessionKey;
+    try { localStorage.setItem('sand.session', JSON.stringify({mode: selectedMode, timer: snapshot})); }
+    catch { /* Timer controls remain usable without storage. */ }
+    scheduleDesktopAlarm(snapshot, modes[selectedMode].name).catch(error => {
+      console.error('Desktop alarm could not be scheduled', error);
+    });
+  }
   const formatted = formatTime(remainingMs);
   timeDisplay.textContent = formatted;
   const seconds = Math.ceil(remainingMs / 1000);
@@ -136,12 +178,12 @@ startButton.addEventListener('click', () => {
   timer.tick();
   if (timer.state === 'running') timer.pause();
   else {
-    if (timer.state === 'complete') timer.reset();
+    if (timer.state === 'complete') timer.reset(modes[selectedMode].minutes * 60_000);
     timer.start();
   }
   render();
 });
-resetButton.addEventListener('click', () => { timer.reset(); render(); });
+resetButton.addEventListener('click', () => { timer.reset(modes[selectedMode].minutes * 60_000); render(); });
 document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
   render();
   if (button.dataset.mode === selectedMode || completionDialog.open) return;
@@ -164,3 +206,5 @@ setInterval(render, 250);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
 window.addEventListener('pageshow', render);
 render();
+
+listenForDesktopCompletion(render).catch(error => console.error('Desktop events unavailable', error));

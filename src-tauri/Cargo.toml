@@ -1,0 +1,13 @@
+[package]
+name = "sand-timer"
+version = "0.2.0"
+description = "A quiet hourglass focus timer"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-notification = "2"
+tauri-plugin-single-instance = "2"

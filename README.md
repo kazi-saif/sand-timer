@@ -1,50 +1,74 @@
-# SAND Timer
+# SAND Timer for Windows
 
 Let distractions settle. Let focus flow.
 
-A minimalist hourglass focus timer built incrementally with HTML, CSS, vanilla JavaScript, and SVG. No build tools or dependencies.
+An hourglass focus timer with Dark, Warm Light and Premium Ambient themes. Built with HTML, CSS, vanilla JavaScript and Tauri 2.
 
-## Current stage: timer controls
+## Features
 
-Implemented:
-- Responsive main screen and custom SVG hourglass.
-- Focus, short break, and long break previews.
-- Dark, Warm Light, and Premium Ambient themes.
-- Accessible Settings dialog and saved theme preference.
-- Keyboard focus styles and reduced-motion support.
+- Timestamp-based Focus / Short break / Long break sessions.
+- Start, Pause, Resume, Reset and mode-switch confirmation.
+- Sand animation follows real timer progress.
+- Completion dialog and optional chime.
+- Custom durations from 1–180 minutes, saved in Settings.
+- Running and paused sessions survive refresh and app restart.
+- Windows tray with Open SAND and Quit SAND.
+- Closing the window hides it in the tray. Quit from the tray to exit.
+- Native completion scheduler and Windows notification, including while hidden.
+- A second launch opens the existing app window.
 
-Implemented timer controls: timestamp-based Start, Pause, Resume and Reset; confirmation before discarding a running or paused session; completion dialog and remaining time in the browser tab. Refresh currently resets the session. Sand drains into the lower chamber using timer progress, with a falling stream that pauses and resets with the timer. Session statistics and custom durations are planned for the next steps. Statistics remain zero until that feature is implemented.
+Windows notifications depend on Windows notification settings. During computer sleep, completion is processed after the computer wakes. A saved expired session shows completion when reopened. Audio in a newly reopened window may require another user interaction. Session statistics are planned and currently show zero.
 
-## Run locally
+## Download a Windows installer
 
-From the project folder:
+The GitHub Actions workflow **Build Windows installer** produces `SAND-Timer-Windows`, containing the `-setup.exe` installer. Open the repository's Actions tab, select the successful run, and download its artifact while signed in. Extract the ZIP and run the installer.
+
+This development installer is unsigned. A trusted production release requires a Windows code-signing certificate. First installation may download Microsoft's WebView2 runtime if it is missing.
+
+## Develop on Windows
+
+Install Node.js 22 LTS, Rust via rustup using the MSVC toolchain, and Microsoft Visual Studio Build Tools with **Desktop development with C++**, including the Windows SDK. WebView2 is also required.
+
+```powershell
+npm ci
+npm run desktop:dev
+```
+
+Build an installer locally on Windows:
+
+```powershell
+npm run desktop:build
+```
+
+The installer appears in `src-tauri/target/release/bundle/nsis/`.
+
+Official prerequisites: https://v2.tauri.app/start/prerequisites/
+
+## Browser preview
 
 ```sh
 python3 -m http.server 8000
 ```
 
-Open http://localhost:8000 in your browser. Stop the server with Ctrl+C.
+Open http://localhost:8000. Keep the terminal running. Browser preview uses the same timer and saved settings. The tray and Windows notifications are available in the installed app.
 
-## Files
+## Project structure
 
-- `index.html`: semantic page, controls, dialog, and custom hourglass artwork.
-- `css/styles.css`: shared layout, theme tokens, responsive styles, and interaction states.
-- `js/app.js`: theme persistence, Settings behavior, timer UI and mode switching.
-- `js/timer.js`: independent deadline-based timer state and time formatting.
-- `tests/timer.test.mjs`: timer tests with a controllable clock.
+- `index.html`, `css/`, `js/` — shared timer interface.
+- `js/timer.js` — timer state, deadlines and validated session restoration.
+- `js/desktop.js` — the Tauri bridge for native completion scheduling.
+- `src-tauri/src/main.rs` — desktop window lifecycle, tray, native scheduler and notification.
+- `src-tauri/tauri.conf.json` — window, security and installer configuration.
+- `scripts/build.mjs` — copies only the application assets to `dist/`.
+- `.github/workflows/windows.yml` — builds an installer on Windows.
 
-## Check this stage
+The frontend build deliberately includes only HTML, CSS and JavaScript application assets.
 
-1. Open Settings and try each theme. Refresh: the selected theme should remain.
-2. Use Tab and Enter to navigate and choose controls. Escape should close Settings and return focus to its opener.
-3. Switch modes: the preview should show 25:00, 05:00, or 15:00.
-4. Narrow the browser to 360px: controls should fit, with statistics below the main screen.
-5. Start, wait a few seconds, Pause, then Resume: time must continue from the paused value.
-6. Choose another mode while running or paused: Keep session preserves it; Switch mode resets to the new duration.
-7. Reset restores the full duration. Refresh currently clears the session.
+## Checks
 
-Run timer checks with `node tests/timer.test.mjs` and sand checks with `node tests/hourglass.test.mjs`.
+```sh
+npm test
+npm run build
+```
 
-## Next stage
-
-Add session statistics, customizable durations and saved timer state.
+On Windows, test a 1-minute session, close the window, and check for a notification. Reopen via the tray and check `00:00`. Test pause/resume, reset, custom duration validation, app restart, sleep/wake, sound mute and all three themes. Use Quit SAND before testing saved-state restoration after a full app restart.

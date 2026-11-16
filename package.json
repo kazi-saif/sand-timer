@@ -1,0 +1,13 @@
+{
+  "name": "sand-timer",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node tests/timer.test.mjs && node tests/hourglass.test.mjs",
+    "desktop:dev": "npm run build && tauri dev",
+    "desktop:build": "tauri build"
+  },
+  "devDependencies": { "@tauri-apps/cli": "^2.0.0" }
+}

@@ -43,7 +43,20 @@ export class Timer {
   }
 
   snapshot() {
-    return { state: this.state, remainingMs: this.remainingMs, durationMs: this.durationMs };
+    return { state: this.state, remainingMs: this.remainingMs, durationMs: this.durationMs, endTime: this.endTime };
+  }
+
+  restore(saved) {
+    if (!saved || !['idle', 'running', 'paused', 'complete'].includes(saved.state)
+      || !Number.isFinite(saved.durationMs) || saved.durationMs <= 0 || saved.durationMs > 180 * 60_000
+      || !Number.isFinite(saved.remainingMs) || saved.remainingMs < 0 || saved.remainingMs > saved.durationMs
+      || (saved.state === 'running' && !Number.isFinite(saved.endTime))) return false;
+    this.durationMs = saved.durationMs;
+    this.remainingMs = saved.remainingMs;
+    this.state = saved.state;
+    this.endTime = saved.state === 'running' ? saved.endTime : null;
+    this.tick();
+    return true;
   }
 }
 

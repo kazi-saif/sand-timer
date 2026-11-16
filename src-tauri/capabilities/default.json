@@ -1,0 +1,6 @@
+{
+  "identifier": "main",
+  "description": "Local timer window",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}
